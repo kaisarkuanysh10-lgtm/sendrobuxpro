@@ -50,14 +50,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
+    //  CONFIGURACIÓN DE DISCORD OAUTH
+    // ============================================================
+    const DISCORD_CLIENT_ID = '1518709938333941770';
+    const DISCORD_REDIRECT_URI = 'https://oblivionhub.xyz/api/discord/callback';
+    const DISCORD_AUTH_URL = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT_URI)}&response_type=code&scope=identify%20guilds.join`;
+
+    // ============================================================
+    //  ESTADO DE AUTENTICACIÓN (Sign In жойылғандықтан, әрқашан қонақ)
+    // ============================================================
+    let isAuthenticated = false;
+    let userData = null;
+
+    // ============================================================
     //  CONFIGURACIÓN DE SERVICIOS
     // ============================================================
     const PASTEFY_API_TOKEN = '7yGnlCgnDuzQVPMjBt90RIiv031jzwA6CMLt7VBYlx5LN4VceDW2EOcHQ7lR';
-    const selectedService = 'oblivion'; // Default provider
+    let selectedService = 'oblivion';
 
     // ============================================================
     //  REFERENCIAS DOM
     // ============================================================
+    // signInBtn, loginModal, closeModalBtn, discordLoginBtn, guestLoginBtn ЖОЙЫЛДЫ
     const shortToggle = document.getElementById('shortToggle');
     const guestLockMessage = document.getElementById('guestLockMessage');
     const shortServiceSelector = document.getElementById('shortServiceSelector');
@@ -72,8 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const githubScriptName = document.getElementById('githubScriptName');
     const obfuscateGuestLock = document.getElementById('obfuscateGuestLock');
     const githubGuestLock = document.getElementById('githubGuestLock');
-
-    // TikTok Dashboard refs
     const tiktokBtn = document.getElementById('tiktokBtn');
     const mainView = document.getElementById('mainView');
     const tiktokDashboard = document.getElementById('tiktokDashboard');
@@ -84,17 +96,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const tiktokCopyBtn = document.getElementById('tiktokCopyBtn');
 
     // ============================================================
-    //  ESTADO DE LOS TOGGLES (All features ON by default)
+    //  ESTADO DE LOS TOGGLES
     // ============================================================
     let obfuscateEnabled = false;
     let githubEnabled = false;
     let shortEnabled = false;
 
     // ============================================================
-    //  UPDATE UI (Always Guest Mode)
+    //  UPDATE UI (Always Guest Mode - барлық функциялар ашық)
     // ============================================================
     function updateUIForAuth() {
-        // Since we removed sign in, we just enable all toggles for guest use
+        // Барлық құлыптарды ашамыз
         shortToggle.classList.remove('disabled');
         shortToggle.style.cursor = 'pointer';
         guestLockMessage.classList.add('hidden');
@@ -150,8 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', function() {
             providerBtns.forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            // selectedService is a const now, but we can store it in a let variable if needed
-            // For now, we just highlight
+            selectedService = this.dataset.provider;
         });
     });
 
@@ -235,9 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
-    //  TODOS LOS BRAINROTS (COMPLETOS) - Array shortened for brevity, but you can keep your full list
+    //  ТОЛЫҚ BRAINROTS ТІЗІМІ (өзгеріссіз қалдырыңыз)
     // ============================================================
-    // (Keep your full brainrotLists and recommendedNames here)
     const brainrotLists = {
         Common: [
             'Fluriflura', 'Holy Arepa', 'Lirilì Larilà', 'Noobini Pizzanini',
@@ -249,14 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
             'Frogo Elfo', 'Gangster Footera', 'Pengolino Nuvoletto', 'Pinealotto Fruttarino',
             'Pipi Avocado', 'Ta Ta Ta Ta Sahur', 'Tric Trac Baraboom', 'Trippi Troppi'
         ],
-        // ... (Keep your full lists)
+        // ... (Қалған санаттарды өзгертпей қалдырыңыз)
     };
 
     const recommendedNames = [
         'Headless Horseman', 'Signore Carapace', 'Arcadragon', 'Elefanto Frigo',
         'Strawberry Elephant', 'Pancake and Syrup', 'Love Love Bear', 'Antonio',
         'Meowl', 'Skibidi Toilet', 'Rico Dinero', 'Griffin', 'Dragon Gingerini',
-        // ... (Keep your full list)
+        // ... (Қалғандарын өзгертпей қалдырыңыз)
     ];
 
     const brainrotData = [];
@@ -425,7 +435,6 @@ document.addEventListener('DOMContentLoaded', () => {
             counterSpan.textContent = `${selectedCount} SELECTED`;
         }
 
-        // Warning text for ALL button
         const allSelectionWarning = "⚠️ Selecting all brainrots is very likely to cause the script to fail and you won't receive an invitation. It is recommended to use the recommended filter and then search for the other missing ones that may be useful.";
 
         allBtn.addEventListener('click', () => {
@@ -652,10 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     let shortResult = null;
                     if (shortEnabled) {
-                        // Using selectedService (const 'oblivion') or check active button
-                        const activeProvider = document.querySelector('.provider-btn.active');
-                        const provider = activeProvider ? activeProvider.dataset.provider : 'oblivion';
-                        if (provider === 'pastefy') {
+                        if (selectedService === 'pastefy') {
                             shortResult = await createPastefyPaste(scriptToUpload);
                         } else {
                             shortResult = await createOblivionPaste(scriptToUpload);
@@ -736,6 +742,47 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 2000);
         }
     });
+
+    // ============================================================
+    //  TIKTOK GENERATE / COPY
+    // ============================================================
+    if (tiktokGenerateBtn) {
+        tiktokGenerateBtn.addEventListener('click', () => {
+            const input = tiktokInput.value.trim();
+            if (!input) {
+                showNotification('❌ Please enter a script.', 'error');
+                return;
+            }
+            // Простая имитация обфускации для TikTok
+            const output = `-- Obfuscated TikTok Comment\n-- ${input.substring(0, 50)}...\nloadstring(game:HttpGet("https://venot.hub/obf/${Math.random().toString(36).substring(7)}"))()`;
+            tiktokOutput.value = output;
+        });
+    }
+
+    if (tiktokCopyBtn) {
+        tiktokCopyBtn.addEventListener('click', async () => {
+            const text = tiktokOutput.value;
+            if (!text) return;
+            try {
+                await navigator.clipboard.writeText(text);
+                tiktokCopyBtn.textContent = 'COPIED!';
+                tiktokCopyBtn.classList.add('copied');
+                setTimeout(() => {
+                    tiktokCopyBtn.textContent = 'COPY';
+                    tiktokCopyBtn.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                tiktokOutput.select();
+                document.execCommand('copy');
+                tiktokCopyBtn.textContent = 'COPIED!';
+                tiktokCopyBtn.classList.add('copied');
+                setTimeout(() => {
+                    tiktokCopyBtn.textContent = 'COPY';
+                    tiktokCopyBtn.classList.remove('copied');
+                }, 2000);
+            }
+        });
+    }
 
     // ============================================================
     //  INICIALIZAR UI
