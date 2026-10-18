@@ -19,7 +19,7 @@
                     <svg class="venot-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#e0e0e0;stop-opacity:1" />
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
                                 <stop offset="50%" style="stop-color:#888888;stop-opacity:1" />
                                 <stop offset="100%" style="stop-color:#333333;stop-opacity:1" />
                             </linearGradient>
@@ -95,7 +95,6 @@
                     <button class="filter-btn" data-rarity="OG">OG</button>
                     <button class="filter-btn" data-rarity="Recommended">⭐ Recommended</button>
                 </div>
-                <!-- Мұндағы элементтердің барлығын өшірмеймін, өйткені олар көп. Олар сол күйінде қалады. -->
                 <div class="items-container scrollable" id="brainrotsContainer"></div>
             </section>
 
@@ -245,23 +244,6 @@
     </div>
 
     <!-- ========== MODALS ========== -->
-    <!-- Login Modal (Бірақ Sign In батырмасы жоқ, сондықтан бұл модаль қажет емес, бірақ скрипт үшін қалдырамыз) -->
-    <div id="loginModal" class="login-modal hidden">
-        <div class="login-modal-content">
-            <div class="login-modal-header">
-                <h2>Login</h2>
-                <button id="closeModalBtn" class="close-modal-btn">×</button>
-            </div>
-            <p class="login-modal-subtitle">Login with your Discord account to get started</p>
-            <button id="discordLoginBtn" class="login-btn discord-btn">
-                <span class="discord-icon">◆</span> Continue with Discord
-            </button>
-            <div class="login-divider">OR</div>
-            <button id="guestLoginBtn" class="login-btn guest-btn">Continue as Guest</button>
-            <p class="guest-hint">Random username · no account needed</p>
-        </div>
-    </div>
-
     <!-- Confirm Modal (Logout) -->
     <div id="confirmModal" class="confirm-modal hidden">
         <div class="confirm-modal-content">
