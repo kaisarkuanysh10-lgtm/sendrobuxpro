@@ -1,0 +1,1 @@
+vc-domain-verify=vercel.app,d5bcda837f465a69d89a
